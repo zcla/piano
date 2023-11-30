@@ -1,0 +1,413 @@
+<html>
+    <head>
+        <style>
+* {
+    box-sizing:border-box
+}
+
+body {
+    margin:0;
+    background:#222;
+}
+
+ul.piano {
+    height:18.875em;
+    width:60em;
+    margin:5em auto;
+    padding:3em 0 0 3em;
+    position:relative;
+    border:1px solid #160801;
+    border-radius:1em;
+    background:linear-gradient(to bottom right,rgba(0,0,0,0.3),rgba(0,0,0,0));
+    box-shadow:0 0 50px rgba(0,0,0,0.5) inset,0 1px rgba(212,152,125,0.2) inset,0 5px 15px rgba(0,0,0,0.5);
+}
+
+li {
+    margin:0;
+    padding:0;
+    list-style:none;
+    position:relative;
+    float:left;
+}
+
+.white {
+    height:16em;
+    width:4em;
+    z-index:1;
+    border-left:1px solid #bbb;
+    border-bottom:1px solid #bbb;
+    border-radius:0 0 5px 5px;
+    box-shadow:-1px 0 0 rgba(255,255,255,0.8) inset,0 0 5px #ccc inset,0 0 3px rgba(0,0,0,0.2);
+    background:linear-gradient(to bottom,#eee 0%,#fff 100%);
+}
+
+.white:active {
+    border-top:1px solid #777;
+    border-left:1px solid #999;
+    border-bottom:1px solid #999;
+    box-shadow:2px 0 3px rgba(0,0,0,0.1) inset,-5px 5px 20px rgba(0,0,0,0.2) inset,0 0 3px rgba(0,0,0,0.2);
+    background:linear-gradient(to bottom,#fff 0%,#e9e9e9 100%);
+}
+
+.black {
+    height:8em;
+    width:2em;
+    margin:0 0 0 -1em !important;
+    z-index:2;
+    border:1px solid #000;
+    border-radius:0 0 3px 3px;
+    box-shadow:-1px -1px 2px rgba(255,255,255,0.2) inset,0 -5px 2px 3px rgba(0,0,0,0.6) inset,0 2px 4px rgba(0,0,0,0.5);
+    background:linear-gradient(45deg,#222 0%,#555 100%);
+}
+
+.black:active {
+    box-shadow:-1px -1px 2px rgba(255,255,255,0.2) inset,0 -2px 2px 3px rgba(0,0,0,0.6) inset,0 1px 2px rgba(0,0,0,0.5);
+    background:linear-gradient(to right,#444 0%,#222 100%);
+}
+
+.c,.d,.e,.g,.a,.b {
+    margin:0 0 0 -1em !important;
+}
+
+.b {
+    margin-right:1em !important;
+}
+
+li:first-child {
+    border-radius:5px 0 5px 5px;
+}
+
+li:last-child {
+    border-radius:0 5px 5px 5px;
+}
+
+.black .highlight {
+    height:7.4em;
+    width:1.4em;
+    margin-left:0.3em;
+    margin-top:0.2em;
+    background:linear-gradient(to bottom, rgba(102,153,204,0), rgba(102,153,204,1));
+    border-radius:5px;
+    text-align: center;
+}
+
+.white .highlight {
+    height:15.4em;
+    width:3.4em;
+    margin-left:0.3em;
+    margin-top:0.2em;
+    background:linear-gradient(to bottom, rgba(102,153,204,0), rgba(102,153,204,1));
+    border-radius:5px;
+    text-align: center;
+}
+
+#form {
+    text-align: center;
+}
+
+p {
+    color:#fff;
+}
+
+a {
+    color:#69c;
+    text-decoration:none;
+}
+        </style>
+        <script>
+'use strict';
+
+function piano() {
+    // Configuração
+    // Fontes: https://www.pianoscales.org/major.html e https://www.pianoscales.org/minor.html
+    const CONFIG = {
+        'a_major': {
+            // A Major
+            // A major scale diagram
+            // Notes: A, B, C#, D, E, F#, G#, A
+            'notes': ['a1', 'b1', 'cs2', 'd2', 'e2', 'fs2', 'gs2', 'a2']
+            // Fingering (LH): 5, 4, 3, 2, 1, 3, 2, 1
+            // Fingering (RH): 1, 2, 3, 1, 2, 3, 4, 5
+        },
+        'a_minor': {
+            // A Minor
+            // A minor scale diagram
+            // Notes: A, B, C, D, E, F, G, A
+            'notes': ['a1', 'b1', 'c2', 'd2', 'e2', 'f2', 'g2', 'a2']
+            // Fingering (LH): 5, 4, 3, 2, 1, 3, 2, 1
+            // Fingering (RH): 1, 2, 3, 1, 2, 3, 4, 5
+        },
+        'asbf_major': {
+            // A# / Bb Major
+            // A# major scale diagram
+            // Notes: Bb, C, D, Eb, F, G, A, Bb
+            'notes': ['bf1', 'c2', 'd2', 'ef2', 'f2', 'g2', 'a2', 'bf2']
+            // Fingering (LH): 3, 2, 1, 4, 3, 2, 1, 3
+            // Fingering (RH): 4, 1, 2, 3, 1, 2, 3, 4
+        },
+        'asbf_minor': {
+            // A# / Bb Minor
+            // A# minor scale diagram
+            // Notes: A#, C, C#, D#, F, F#, G#, A#
+            'notes': ['as1', 'c2', 'cs2', 'ds2', 'f2', 'fs2', 'gs2', 'as2']
+            // Fingering (LH): 2, 1, 3, 2, 1, 4, 3, 2
+            // Fingering (RH): 2, 1, 2, 3, 1, 2, 3, 4
+        },
+        'b_major': {
+            // B Major
+            // B major scale diagram
+            // Notes: B, C#, D#, E, F#, G#, A#, B
+            'notes': ['b1', 'cs2', 'ds2', 'e2', 'fs2', 'gs2', 'as2', 'b2']
+            // Fingering (LH): 4, 3, 2, 1, 4, 3, 2, 1
+            // Fingering (RH): 1, 2, 3, 1, 2, 3, 4, 5
+        },
+        'b_minor': {
+            // B Minor
+            // B minor scale diagram
+            // Notes: B, C#, D, E, F#, G, A, B
+            'notes': ['b1', 'cs2', 'd2', 'e2', 'fs2', 'g2', 'a2', 'b2']
+            // Fingering (LH): 4, 3, 2, 1, 4, 3, 2, 1
+            // Fingering (RH): 1, 2, 3, 1, 2, 3, 4, 5
+        },
+        'c_major': {
+            // C Major
+            // C major scale diagram
+            // Notes: C, D, E, F, G, A, B, C
+            'notes': ['c1', 'd1', 'e1', 'f1', 'g1', 'a1', 'b1', 'c2']
+            // Fingering (LH): 5, 4, 3, 2, 1, 3, 2, 1
+            // Fingering (RH): 1, 2, 3, 1, 2, 3, 4, 5
+        },
+        'c_minor': {
+            // C Minor
+            // C minor scale diagram
+            // Notes: C, D, Eb, F, G, Ab, Bb, C
+            'notes': ['c1', 'd1', 'ef1', 'f1', 'g1', 'af1', 'bf1', 'c2']
+            // Fingering (LH): 5, 4, 3, 2, 1, 3, 2, 1
+            // Fingering (RH): 1, 2, 3, 1, 2, 3, 4, 5
+        },
+        'csdf_major': {
+            // C# / Db Major
+            // C# major scale diagram
+            // Notes: Db, Eb, F, Gb, Ab, Bb, C, Db
+            'notes': ['df1', 'ef1', 'f1', 'gf1', 'af1', 'bf1', 'c2', 'df2']
+            // Fingering (LH): 3, 2, 1, 4, 3, 2, 1, 3
+            // Fingering (RH): 2, 3, 1, 2, 3, 4, 1, 2
+        },
+        'csdf_minor': {
+            // C# / Db Minor
+            // C# minor scale diagram
+            // Notes: C#, D#, E, F#, G#, A, B, C#
+            'notes': ['cs1', 'ds1', 'e1', 'fs1', 'gs1', 'a1', 'b1', 'cs2']
+            // Fingering (LH): 3, 2, 1, 4, 3, 2, 1, 3
+            // Fingering (RH): 3, 4, 1, 2, 3, 1, 2, 3
+        },
+        'd_major': {
+            // D Major
+            // D major scale diagram
+            // Notes: D, E, F#, G, A, B, C#, D
+            'notes': ['d1', 'e1', 'fs1', 'g1', 'a1', 'b1', 'cs2', 'd2']
+            // Fingering (LH): 5, 4, 3, 2, 1, 3, 2, 1
+            // Fingering (RH): 1, 2, 3, 1, 2, 3, 4, 5
+        },
+        'd_minor': {
+            // D Minor
+            // D minor scale diagram
+            // Notes: D, E, F, G, A, Bb, C, D
+            'notes': ['d1', 'e1', 'f1', 'g1', 'a1', 'bf1', 'c2', 'd2']
+            // Fingering (LH): 5, 4, 3, 2, 1, 3, 2, 1
+            // Fingering (RH): 1, 2, 3, 1, 2, 3, 4, 5
+        },
+        'dsef_major': {
+            // D# / Eb Major
+            // D# major scale diagram
+            // Notes: Eb, F, G, Ab, Bb, C, D, Eb
+            'notes': ['ef1', 'f1', 'g1', 'af1', 'bf1', 'c2', 'd2', 'ef2']
+            // Fingering (LH): 3, 2, 1, 4, 3, 2, 1, 3
+            // Fingering (RH): 3, 1, 2, 3, 4, 1, 2, 3
+        },
+        'dsef_minor': {
+            // D# / Eb Minor
+            // D# minor scale diagram
+            // Notes: D#, F, F#, G#, A#, B, C#, D#
+            'notes': ['ds1', 'f1', 'fs1', 'gs1', 'as1', 'b1', 'cs2', 'ds2']
+            // Fingering (LH): 2, 1, 4, 3, 2, 1, 3, 2
+            // Fingering (RH): 3, 1, 2, 3, 4, 1, 2, 3
+        },
+        'e_major': {
+            // E Major
+            // E major scale diagram
+            // Notes: E, F#, G#, A, B, C#, D#, E
+            'notes': ['e1', 'fs1', 'gs1', 'a1', 'b1', 'cs2', 'ds2', 'e2']
+            // Fingering (LH): 5, 4, 3, 2, 1, 3, 2, 1
+            // Fingering (RH): 1, 2, 3, 1, 2, 3, 4, 5
+        },
+        'e_minor': {
+            // E Minor
+            // E minor scale diagram
+            // Notes: E, F#, G, A, B, C, D, E
+            'notes': ['e1', 'fs1', 'g1', 'a1', 'b1', 'c2', 'd2', 'e2']
+            // Fingering (LH): 5, 4, 3, 2, 1, 3, 2, 1
+            // Fingering (RH): 1, 2, 3, 1, 2, 3, 4, 5
+        },
+        'f_major': {
+            // F Major
+            // F major scale diagram
+            // Notes: F, G, A, Bb, C, D, E, F
+            'notes': ['f1', 'g1', 'a1', 'bf1', 'c2', 'd2', 'e2', 'f2']
+            // Fingering (LH): 5, 4, 3, 2, 1, 3, 2, 1
+            // Fingering (RH): 1, 2, 3, 4, 1, 2, 3, 4
+        },
+        'f_minor': {
+            // F Minor
+            // F minor scale diagram
+            // Notes: F, G, Ab, Bb, C, Db, Eb, F
+            'notes': ['f1', 'g1', 'af1', 'bf1', 'c2', 'df2', 'ef2', 'f2']
+            // Fingering (LH): 5, 4, 3, 2, 1, 3, 2, 1
+            // Fingering (RH): 1, 2, 3, 4, 1, 2, 3, 4
+        },
+        'fsgf_major': {
+            // F# / Gb Major
+            // F# major scale diagram
+            // Notes: F#, G#, A#, B, C#, D#, F, F#
+            'notes': ['fs1', 'gs1', 'as1', 'b1', 'cs2', 'ds2', 'f2', 'fs2']
+            // Fingering (LH): 4, 3, 2, 1, 3, 2, 1, 4
+            // Fingering (RH): 2, 3, 4, 1, 2, 3, 1, 2
+        },
+        'fsgf_minor': {
+            // F# / Gb Minor
+            // F# minor scale diagram
+            // Notes: F#, G#, A, B, C#, D, E, F#
+            'notes': ['fs1', 'gs1', 'a1', 'b1', 'cs2', 'd2', 'e2', 'fs2']
+            // Fingering (LH): 4, 3, 2, 1, 3, 2, 1, 4
+            // Fingering (RH): 2, 3, 1, 2, 3, 1, 2, 3
+        },
+        'g_major': {
+            // G Major
+            // G major scale diagram
+            // Notes: G, A, B, C, D, E, F#, G
+            'notes': ['g1', 'a1', 'b1', 'c2', 'd2', 'e2', 'fs2', 'g2']
+            // Fingering (LH): 5, 4, 3, 2, 1, 3, 2, 1
+            // Fingering (RH): 1, 2, 3, 1, 2, 3, 4, 5
+        },
+        'g_minor': {
+            // G Minor
+            // G minor scale diagram
+            // Notes: G, A, Bb, C, D, Eb, F, G
+            'notes': ['g1', 'a1', 'bf1', 'c2', 'd2', 'ef2', 'f2', 'g2']
+            // Fingering (LH): 5, 4, 3, 2, 1, 3, 2, 1
+            // Fingering (RH): 1, 2, 3, 1, 2, 3, 4, 5
+        },
+        'gsaf_major': {
+            // G# / Ab Major
+            // G# major scale diagram
+            // Notes: Ab, Bb, C, Db, Eb, F, G, Ab
+            'notes': ['af1', 'bf1', 'c2', 'df2', 'ef2', 'f2', 'g2', 'af2']
+            // Fingering (LH): 3, 2, 1, 4, 3, 2, 1, 3
+            // Fingering (RH): 3, 4, 1, 2, 3, 1, 2, 3
+        },
+        'gsaf_minor': {
+            // G# / Ab Minor
+            // G# minor scale diagram
+            // Notes: G#, A#, B, C#, D#, E, F#, G#
+            'notes': ['gs1', 'as1', 'b1', 'cs2', 'ds2', 'e2', 'fs2', 'gs2']
+            // Fingering (LH): 3, 2, 1, 3, 2, 1, 3, 2
+            // Fingering (RH): 3, 4, 1, 2, 3, 1, 2, 3
+        }
+    }
+    const KEY_TO_ID = {
+        'af1': 'gs1',
+        'bf1': 'as1',
+        'df1': 'cs1',
+        'ef1': 'ds1',
+        'gf1': 'fs1',
+        'af2': 'gs2',
+        'bf2': 'as2',
+        'df2': 'cs2',
+        'ef2': 'ds2',
+        'gf2': 'fs2'
+    }
+    // Verifica opções selecionadas
+    const option = document.getElementById('note').value + '_' + document.getElementById('majorminor').value;
+    // Tira todos os highlights
+    for (const child of document.getElementById('piano').children) {
+        for (const grandChild of child.children) {
+            child.removeChild(grandChild);
+        }
+    }
+    // Coloca os highlights
+    for (const note of CONFIG[option].notes) {
+        let id = note;
+        if (KEY_TO_ID[id]) {
+            id = KEY_TO_ID[id];
+        }
+        const div = document.createElement("p");
+        div.classList.add('highlight');
+        document.getElementById(id).appendChild(div);
+    }
+}
+
+window.onload = function () {
+    piano();
+}
+        </script>
+    </head>
+    <body>
+        <ul id="piano" class="piano">
+            <li id="c1" class="white c"></li>
+            <li id="cs1" class="black cs"></li>
+            <li id="d1" class="white d"></li>
+            <li id="ds1" class="black ds"></li>
+            <li id="e1" class="white e"></li>
+            <li id="f1" class="white f"></li>
+            <li id="fs1" class="black fs"></li>
+            <li id="g1" class="white g"></li>
+            <li id="gs1" class="black gs"></li>
+            <li id="a1" class="white a"></li>
+            <li id="as1" class="black as"></li>
+            <li id="b1" class="white b"></li>
+            <li id="c2" class="white c"></li>
+            <li id="cs2" class="black cs"></li>
+            <li id="d2" class="white d"></li>
+            <li id="ds2" class="black ds"></li>
+            <li id="e2" class="white e"></li>
+            <li id="f2" class="white f"></li>
+            <li id="fs2" class="black fs"></li>
+            <li id="g2" class="white g"></li>
+            <li id="gs2" class="black gs"></li>
+            <li id="a2" class="white a"><div class="highlight">x</div></li>
+            <li id="as2" class="black as"><div class="highlight">x</div></li>
+            <li id="b2" class="white b"></li>
+        </ul>
+        <div id="form">
+            <p>
+                <select id="note" onchange="piano();">
+                    <option value="c">C</option>
+                    <option value="csdf">C#/Db</option>
+                    <option value="d">D</option>
+                    <option value="dsef">D#/Eb</option>
+                    <option value="e">E</option>
+                    <option value="f">F</option>
+                    <option value="fsgf">F#/Gb</option>
+                    <option value="g">G</option>
+                    <option value="gsaf">G#/Ab</option>
+                    <option value="a">A</option>
+                    <option value="asbf">A#/Bb</option>
+                    <option value="b">B</option>
+                </select>
+                <select id="majorminor" onchange="piano();">
+                    <option value="major">Major</option>
+                    <option value="minor">Minor</option>
+                </select>
+            </p>
+            <p>
+                Sources:
+            </p>
+            <p>
+                HTML e CSS do piano: <a href="https://codepen.io/zastrow/pen/kxdYdk" target="_blank">Philip Zastrow</a>.
+            </p>
+            <p>
+                Escalas: <a href="https://www.pianoscales.org/" target="_blank">Pianoscales</a> (<a href="https://www.pianoscales.org/major.html" target="_blank">major</a>/<a href="https://www.pianoscales.org/minor.html" target="_blank">minor</a>).
+            </p>
+        </div>
+    </body>
+</html>
